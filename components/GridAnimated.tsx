@@ -26,7 +26,6 @@ export default function GridAnimated({
   onReset,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
   const [currentTileSize, setCurrentTileSize] = useState(tileSize);
   const [currentGap, setCurrentGap] = useState(gap);
 
@@ -35,7 +34,6 @@ export default function GridAnimated({
     const updateSize = () => {
       if (!containerRef.current) return;
       const { clientWidth, clientHeight } = containerRef.current;
-      setContainerSize({ width: clientWidth, height: clientHeight });
 
       // Scale tile size based on board size and screen width
       let scaledTileSize = tileSize;

@@ -65,7 +65,7 @@ export default function ClientGame({ boardSize }: ClientGameProps) {
         const imageUrl = await generateBackgroundImage(theme);
         setBgImage(imageUrl);
 
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error(err);
         setColors(DEFAULT_DARK_THEME);
         setThemeSet(true);
@@ -108,8 +108,8 @@ export default function ClientGame({ boardSize }: ClientGameProps) {
         } else {
           setReviewContent(result.content ?? null);
         }
-      } catch (err: any) {
-        setReviewError(err?.message ?? 'Failed to generate review');
+      } catch (err: unknown) {
+        setReviewError(err instanceof Error ? err.message : 'Failed to generate review');
       } finally {
         setReviewLoading(false);
       }
