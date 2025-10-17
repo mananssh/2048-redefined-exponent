@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { TileObj, MoveResult } from '../lib/tileLogic';
 import * as logic from '../lib/tileLogic';
+import { checkGameOver } from '@/lib/gameLogic';
 
 type UseTileGameReturn = {
     tiles: TileObj[];
@@ -10,9 +11,11 @@ type UseTileGameReturn = {
     score: number;
     isAnimating: boolean;
     handleMove: (dir: 'left' | 'right' | 'up' | 'down') => void;
+    isGameOver: boolean;
     resetGame: (n?: number) => void;
     undo: () => void;
     addRandomTile: () => void;
+    historyRef: React.MutableRefObject<TileObj[][]>;
 };
 
 export function useTileGame(initialSize = 4): UseTileGameReturn {
@@ -25,6 +28,24 @@ export function useTileGame(initialSize = 4): UseTileGameReturn {
     const [isAnimating, setIsAnimating] = useState(false);
     const historyRef = useRef<TileObj[][]>([]);
     const scoreHistoryRef = useRef<number[]>([]);
+    const [isGameOver, setIsGameOver] = useState(false);
+
+    // Helper: convert tiles array to board format for game logic checks
+    const tilesToBoard = useCallback((tileList: TileObj[]): number[][] => {
+        const board = Array.from({ length: size }, () => Array(size).fill(0));
+        for (const tile of tileList) {
+            if (tile.r >= 0 && tile.r < size && tile.c >= 0 && tile.c < size) {
+                board[tile.r][tile.c] = tile.value;
+            }
+        }
+        return board;
+    }, [size]);
+
+    // Check game over after tiles update
+    useEffect(() => {
+        const board = tilesToBoard(tiles);
+        setIsGameOver(checkGameOver(board));
+    }, [tiles, tilesToBoard]);
 
     // initialization on mount or size change
     useEffect(() => {
@@ -162,8 +183,7 @@ export function useTileGame(initialSize = 4): UseTileGameReturn {
             // find target value increase: sum of from values + previous target value -> the increment is sum(from)+previous_target
             // But easier: compute gained as sum of merged values (sum of froms + their target increment)
             // We'll compute by scanning merges from previous 'current' tiles snapshot:
-            // For simplicity, calculate gained as sum of values of fromIds + their target previous value (approx)
-            // Here we compute gained as sum of fromIds' values (OK for scoreboard).
+            // For simplicity, calculate gained as sum of values of fromIds (OK for scoreboard).
             for (const fid of m.fromIds) {
                 const f = current.find(x => x.id === fid);
                 if (f) gained += f.value;
@@ -175,6 +195,15 @@ export function useTileGame(initialSize = 4): UseTileGameReturn {
     }, [isAnimating, tiles, size, pushHistory, score]);
 
     return useMemo(() => ({
-        tiles, size, score, isAnimating, handleMove, resetGame, undo, addRandomTile
-    }), [tiles, size, score, isAnimating, handleMove, resetGame, undo, addRandomTile]);
+        tiles,
+        size,
+        score,
+        isAnimating,
+        handleMove,
+        resetGame,
+        undo,
+        addRandomTile,
+        isGameOver,
+        historyRef,
+    }), [tiles, size, score, isAnimating, handleMove, resetGame, undo, addRandomTile, isGameOver]);
 }

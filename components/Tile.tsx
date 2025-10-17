@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 type TileProps = {
     value: number;
     structured_color_output?: Record<string, string>; // "RRGGBB,RRGGBB"
+    tileSize: number;
 };
 
 /**
@@ -11,7 +12,8 @@ type TileProps = {
  * - Uses structured_color_output palette if provided.
  * - Normalizes both bg and text colors returned without '#' and applies them.
  */
-const Tile: React.FC<TileProps> = ({ value, structured_color_output }) => {
+const Tile: React.FC<TileProps> = ({ value, structured_color_output, tileSize }) => {
+    console.log('Tile render', { value, structured_color_output, tileSize });
     const getPaletteKey = (val: number) => {
         if (val <= 4) return 'below4';
         if (val <= 8) return 'below8';
@@ -36,7 +38,7 @@ const Tile: React.FC<TileProps> = ({ value, structured_color_output }) => {
 
     // Font scaling
     const digits = String(value).length;
-    const fontSize = digits <= 2 ? 36 : digits === 3 ? 30 : digits === 4 ? 24 : digits === 5 ? 20 : 16;
+    const fontSize = digits <= 2 ? tileSize/2 : digits === 3 ? tileSize/3 : digits === 4 ? tileSize/6 : digits === 5 ? tileSize/8 : tileSize/12;
 
     return (
         <motion.div
@@ -56,7 +58,6 @@ const Tile: React.FC<TileProps> = ({ value, structured_color_output }) => {
                     textAlign: 'center',
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
-                    textOverflow: 'ellipsis',
                     padding: '0 .25rem',
                 }}
             >
